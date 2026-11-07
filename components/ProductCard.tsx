@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShoppingBag, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/components/CartContext";
+import { formatPrice } from "@/lib/currency";
 
 type Product = {
   id: number;
@@ -56,7 +57,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </Link>
 
         <p className="mt-2 text-lg font-bold text-gray-900">
-          ${Number(product.price).toFixed(2)}
+          {formatPrice(product.price)}
         </p>
 
         {/* Add to cart */}

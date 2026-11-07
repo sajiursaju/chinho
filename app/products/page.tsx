@@ -1,124 +1,115 @@
 import Link from "next/link";
-import { pool } from "@/lib/db";
-import { productCategories } from "@/config/site";
+import CategorySidebar from "@/components/CategorySidebar";
 import ProductCard from "@/components/ProductCard";
+import { getMainCategory, getSubCategory } from "@/config/categories";
+import {
+  getProducts,
+  parseSort,
+  PRODUCT_SORTS,
+  type ProductSort,
+} from "@/lib/products";
 
-export const dynamic = "force-dynamic";
-
-const SORTS: Record<string, { label: string; sql: string }> = {
-  newest: { label: "Newest", sql: "id DESC" },
-  price_asc: { label: "Price: low to high", sql: "price ASC" },
-  price_desc: { label: "Price: high to low", sql: "price DESC" },
-  name: { label: "Name A-Z", sql: "name ASC" },
+type SearchParams = {
+  category?: string;
+  subcategory?: string;
+  sort?: string;
+  q?: string;
 };
 
-// Whitelist: finds a parent OR a sub-category.
-// A parent also includes the slugs of its sub-categories.
-function findCategory(value: string) {
-  for (const c of productCategories) {
-    if (c.value === value) {
-      return {
-        value: c.value,
-        label: c.label,
-        slugs: [c.value, ...(c.children?.map((s) => s.value) ?? [])],
-      };
-    }
-    const child = c.children?.find((s) => s.value === value);
-    if (child) {
-      return { value: child.value, label: child.label, slugs: [child.value] };
-    }
-  }
-  return null;
+const SORT_LABELS: Record<ProductSort, string> = {
+  newest: "Newest",
+  oldest: "Oldest",
+  "price-asc": "Price: low to high",
+  "price-desc": "Price: high to low",
+};
+
+// Rebuild this page at most once every 60 seconds, so it loads fast
+// and admin changes show up within a minute.
+export const revalidate = 60;
+
+// Builds a link that keeps the current filters and changes one of them.
+function buildHref(params: {
+  category?: string;
+  subcategory?: string;
+  q?: string;
+  sort?: ProductSort;
+}): string {
+  const query = new URLSearchParams();
+  if (params.category) query.set("category", params.category);
+  if (params.subcategory) query.set("subcategory", params.subcategory);
+  if (params.q) query.set("q", params.q);
+  if (params.sort && params.sort !== "newest") query.set("sort", params.sort);
+  const qs = query.toString();
+  return qs ? `/products?${qs}` : "/products";
 }
 
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string; category?: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
-  const { q = "", sort = "newest", category = "" } = await searchParams;
-  const search = q.trim().slice(0, 100);
-  const order = (SORTS[sort] ?? SORTS.newest).sql; // whitelisted
-  const active = findCategory(category); // whitelisted
+  const params = await searchParams;
 
-  const where: string[] = [];
-  const params: string[] = [];
-  if (search) {
-    where.push("name LIKE ?");
-    params.push(`%${search}%`);
-  }
-  if (active) {
-    where.push(`category IN (${active.slugs.map(() => "?").join(",")})`);
-    params.push(...active.slugs);
-  }
-  const sql = `SELECT * FROM products ${
-    where.length ? "WHERE " + where.join(" AND ") : ""
-  } ORDER BY ${order}`;
+  // Only values in config/categories.ts are accepted. Anything else is ignored.
+  const main = getMainCategory(params.category);
+  const sub = getSubCategory(main?.slug, params.subcategory);
+  const category = main?.slug;
+  const subcategory = sub?.slug;
+  const sort = parseSort(params.sort);
+  const q = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
 
-  const [rows]: any = await pool.query(sql, params);
-  const products = rows as Record<string, any>[];
+  const products = await getProducts({ category, subcategory, sort, q });
+
+  const title = q
+    ? `Search: "${q}"`
+    : main && sub
+      ? `${main.label} · ${sub.label}`
+      : main
+        ? main.label
+        : "All Products";
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">{active ? active.label : "All products"}</h1>
+    <main className="mx-auto flex max-w-7xl gap-8 px-4 py-8">
+      <CategorySidebar activeCategory={category} activeSubcategory={subcategory} />
 
-      <form method="GET" className="mb-8 flex flex-wrap gap-3">
-        <input
-          name="q"
-          defaultValue={search}
-          placeholder="Search products..."
-          className="min-w-[200px] flex-1 rounded border px-3 py-2"
-        />
-        <select name="category" defaultValue={active?.value ?? ""} className="rounded border px-3 py-2">
-          <option value="">All categories</option>
-          {productCategories.map((c) => (
-            <optgroup key={c.value} label={c.label}>
-              <option value={c.value}>All {c.label}</option>
-              {c.children?.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <select name="sort" defaultValue={sort} className="rounded border px-3 py-2">
-          {Object.entries(SORTS).map(([key, s]) => (
-            <option key={key} value={key}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-        <button className="rounded bg-black px-4 py-2 text-white">Apply</button>
-        {(search || active || sort !== "newest") && (
-          <Link href="/products" className="px-2 py-2 underline">
-            Clear
-          </Link>
-        )}
-      </form>
+      <section className="min-w-0 flex-1">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            <span className="text-sm text-gray-500">{products.length} items</span>
+          </div>
 
-      {products.length === 0 ? (
-        <p>No products found.</p>
-      ) : (
-        <>
-          <p className="mb-4 text-sm text-gray-500">
-            {products.length} product{products.length === 1 ? "" : "s"}
-          </p>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={{
-                  id: p.id,
-                  name: p.name,
-                  price: Number(p.price),
-                  image: p.image ?? p.image_url ?? p.img ?? null,
-                }}
-              />
+          {/* Sort options */}
+          <div className="flex flex-wrap gap-2 text-sm">
+            {(Object.keys(PRODUCT_SORTS) as ProductSort[]).map((key) => {
+              const active = sort === key;
+              return (
+                <Link
+                  key={key}
+                  href={buildHref({ category, subcategory, q, sort: key })}
+                  className={`rounded-full border px-3 py-1 ${
+                    active
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {SORT_LABELS[key]}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {products.length === 0 ? (
+          <p className="text-gray-500">No products found.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        </>
-      )}
+        )}
+      </section>
     </main>
   );
 }

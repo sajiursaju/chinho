@@ -1,7 +1,1 @@
-import { NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
-
-export async function GET() {
-  const session = await getSession();
-  return NextResponse.json({ user: session });
-}
+.then((data) => setUser(data?.user?.id ? data.user : null))

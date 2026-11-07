@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ImagePlus, X } from "lucide-react";
-import { productCategories } from "@/config/site";
+import CategorySelect from "@/components/CategorySelect";
 
 type PictureKey = "image" | "image_2" | "image_3";
 
@@ -12,6 +12,7 @@ type Values = {
   name: string;
   price: string;
   category: string;
+  subcategory: string;
   description: string;
   image: string;
   image_2: string;
@@ -22,6 +23,7 @@ const EMPTY: Values = {
   name: "",
   price: "",
   category: "",
+  subcategory: "",
   description: "",
   image: "",
   image_2: "",
@@ -54,7 +56,7 @@ export default function ProductForm({
 }) {
   const router = useRouter();
 
-  // Database NULLs become empty strings so no field is ever undefined or null
+  // Database NULLs become empty strings, so no field is ever undefined or null.
   const [values, setValues] = useState<Values>(() => {
     const merged = { ...EMPTY };
     for (const k of Object.keys(EMPTY) as (keyof Values)[]) {
@@ -175,10 +177,10 @@ export default function ProductForm({
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-3">
         <div>
           <label htmlFor="price" className={labelClass}>
-            Price ($)
+            Price (৳)
           </label>
           <input
             id="price"
@@ -192,32 +194,11 @@ export default function ProductForm({
           />
         </div>
 
-        <div>
-          <label htmlFor="category" className={labelClass}>
-            Category
-          </label>
-          <select
-            id="category"
-            value={values.category}
-            onChange={set("category")}
-            required
-            className={inputClass}
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {productCategories.map((c: any) => (
-              <optgroup key={c.value} label={c.label}>
-                <option value={c.value}>{c.label} (general)</option>
-                {c.children?.map((s: any) => (
-                  <option key={s.value} value={s.value}>
-                    {s.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
+        {/* Category and subcategory: the same list the shop uses */}
+        <CategorySelect
+          value={{ category: values.category, subcategory: values.subcategory }}
+          onChange={(next) => setValues((v) => ({ ...v, ...next }))}
+        />
       </div>
 
       <div>

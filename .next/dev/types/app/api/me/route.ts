@@ -2,7 +2,7 @@
 import * as entry from '../../../../../../app/api/me/route.js'
 import type { NextRequest } from 'next/server.js'
 
-import type { InstantConfigForTypeCheckInternal, Prefetch } from 'next/dist/build/segment-config/app/app-segment-config.js'
+import type { InstantConfigForTypeCheckInternal, Prefetch, EnsureStatic } from 'next/dist/build/segment-config/app/app-segment-config.js'
 
 type TEntry = typeof import('../../../../../../app/api/me/route.js')
 
@@ -21,8 +21,10 @@ checkFields<Diff<{
   PATCH?: Function
   config?: {}
   generateStaticParams?: Function
+  
   instant?: InstantConfigForTypeCheckInternal
   prefetch?: Prefetch
+  ensureStatic?: EnsureStatic
   unstable_dynamicStaleTime?: number
   revalidate?: RevalidateRange<TEntry> | false
   dynamic?: 'auto' | 'force-dynamic' | 'error' | 'force-static'

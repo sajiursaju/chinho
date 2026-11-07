@@ -1,27 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { RowDataPacket } from "mysql2";
 import { pool } from "@/lib/db";
-import { productCategories } from "@/config/site";
+import { getMainCategory, getSubCategory } from "@/config/categories";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
 
+// Always read the latest product from the database, so price and stock changes show immediately.
 export const dynamic = "force-dynamic";
 
-// Makes "images/a.jpg" work from any URL by turning it into "/images/a.jpg"
+// Makes "images/a.jpg" work from any URL by turning it into "/images/a.jpg".
 function imageSrc(value: unknown): string | null {
   if (typeof value !== "string" || !value.trim()) return null;
   const v = value.trim();
   if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("/")) return v;
   return `/${v}`;
-}
-
-function categoryLabel(slug: string): string | null {
-  for (const c of productCategories) {
-    if (c.value === slug) return c.label;
-    const child = c.children?.find((s) => s.value === slug);
-    if (child) return child.label;
-  }
-  return null;
 }
 
 export default async function ProductPage({
@@ -33,40 +26,58 @@ export default async function ProductPage({
   const productId = Number(id);
   if (!Number.isInteger(productId) || productId < 1) notFound();
 
-  const [rows]: any = await pool.query(
+  const [rows] = await pool.query<RowDataPacket[]>(
     "SELECT * FROM products WHERE id = ? LIMIT 1",
     [productId]
   );
   const p = rows[0];
   if (!p) notFound();
 
-  // Up to 3 pictures, empty ones are skipped
+  // Up to 3 pictures. Empty ones are skipped.
   const images = [p.image ?? p.image_url ?? p.img, p.image_2, p.image_3]
     .map(imageSrc)
     .filter((src): src is string => src !== null);
 
   const price = Number(p.price);
-  const category = p.category ? categoryLabel(p.category) : null;
+
+  // Look up the names from config/categories.ts, so they match the sidebar.
+  // Old rows with no subcategory simply skip that part.
+  const main = getMainCategory(p.category);
+  const sub = getSubCategory(p.category, p.subcategory);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      {/* Breadcrumb -> /products */}
-      <nav className="mb-6 text-sm text-gray-500">
+      {/* Breadcrumb: Products / Men / Shirts / Product name */}
+      <nav className="mb-6 flex flex-wrap items-center gap-x-2 text-sm text-gray-500">
         <Link href="/products" className="hover:text-gray-900">
           Products
         </Link>
-        {category && (
+
+        {main && (
           <>
-            <span className="mx-2">/</span>
+            <span>/</span>
             <Link
-              href={`/products?category=${p.category}`}
+              href={`/products?category=${main.slug}`}
               className="hover:text-gray-900"
             >
-              {category}
+              {main.label}
             </Link>
           </>
         )}
-        <span className="mx-2">/</span>
+
+        {main && sub && (
+          <>
+            <span>/</span>
+            <Link
+              href={`/products?category=${main.slug}&subcategory=${sub.slug}`}
+              className="hover:text-gray-900"
+            >
+              {sub.label}
+            </Link>
+          </>
+        )}
+
+        <span>/</span>
         <span className="text-gray-900">{p.name}</span>
       </nav>
 
@@ -76,14 +87,17 @@ export default async function ProductPage({
 
         {/* Details */}
         <div>
-          {category && (
+          {main && (
             <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-indigo-600">
-              {category}
+              {main.label}
+              {sub ? ` · ${sub.label}` : ""}
             </p>
           )}
+
           <h1 className="text-3xl font-bold text-gray-900">{p.name}</h1>
+
           <p className="mt-4 text-3xl font-bold text-gray-900">
-            ${price.toFixed(2)}
+            ৳{price.toFixed(2)}
           </p>
 
           {p.description && (

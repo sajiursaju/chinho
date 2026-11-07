@@ -1,5 +1,5 @@
-
 import Link from "next/link";
+import { siteConfig } from "@/config/site";
 
 const footerLinks = [
   {
@@ -51,16 +51,21 @@ export default function Footer() {
             href="/"
             className="inline-block text-3xl font-extrabold tracking-tight text-white transition hover:opacity-80"
           >
-            My<span className="text-orange-400">Store</span>.
+            {siteConfig.name}
+            <span className="text-orange-400">.</span>
           </Link>
 
-          <p className="mt-4 max-w-xs text-sm leading-7 text-gray-400">
-            Your trusted destination for quality products, great prices,
-            and a shopping experience you will love.
+          <p className="mt-3 max-w-xs text-sm font-semibold italic text-orange-300">
+            {siteConfig.slogan}
+          </p>
+
+          <p className="mt-3 max-w-xs text-sm leading-7 text-gray-400">
+            Women&apos;s and men&apos;s clothing at honest prices, with
+            free delivery over ৳2,000 and 7-day easy exchange.
           </p>
 
           <Link
-            href="/shop"
+            href="/products"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-orange-400 px-5 py-3 text-sm font-bold text-gray-950 shadow-md transition duration-300 hover:-translate-y-1 hover:bg-orange-300"
           >
             Explore Products <span>→</span>
@@ -94,7 +99,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-6 py-7 text-center sm:flex-row sm:text-left">
           <p className="text-xs text-gray-500">
-            © {year} MyStore. All rights reserved.
+            © {year} {siteConfig.name}. All rights reserved.
           </p>
 
           <nav className="flex flex-wrap justify-center gap-5 text-xs text-gray-400">

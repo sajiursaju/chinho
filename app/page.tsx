@@ -1,39 +1,37 @@
-import Link from "next/link";
+import CategorySidebar from "@/components/CategorySidebar";
 import ProductCard from "@/components/ProductCard";
-import { getProducts } from "@/lib/products";
-import HeroCarousel from "@/components/HeroCarousel";
-export const dynamic = "force-dynamic";
+import { getHomeProducts, HOME_PRODUCT_COUNT } from "@/lib/products";
 
-export default async function Home() {
-  const products = await getProducts();
-  const featured = products.slice(0, 4);
+// Rebuild this page at most once every 60 seconds, so it loads fast
+// and admin product changes appear within a minute.
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const products = await getHomeProducts(HOME_PRODUCT_COUNT);
 
   return (
-    <>
-      <section className="bg-gray-100 py-20 text-center">
-        <h1 className="text-4xl font-bold">Welcome to MyStore</h1>
-        <p className="mt-3 text-gray-600">Quality products at great prices.</p>
-        <Link
-          href="/products"
-          className="mt-6 inline-block rounded bg-black px-6 py-3 text-white"
-        >
-          Shop now
-        </Link>
-      </section>
+    // A <div> instead of <main>, because the layout already provides the <main> element.
+    <div className="mx-auto flex max-w-7xl gap-8 px-4 py-8">
+      {/* Left column: shop by category and quick links (large screens) */}
+      <CategorySidebar />
 
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Featured Products</h2>
-          <Link href="/products" className="text-sm underline">
-            View all
-          </Link>
+      {/* Right column: the product grid */}
+      <section className="min-w-0 flex-1">
+        <div className="mb-6 flex items-end justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
+          <span className="text-sm text-gray-500">{products.length} items</span>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+
+        {products.length === 0 ? (
+          <p className="text-gray-500">No products yet.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
-    </>
+    </div>
   );
 }

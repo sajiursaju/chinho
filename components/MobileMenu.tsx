@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { siteConfig, categories, quickLinks } from "@/config/site";
+import { siteConfig, quickLinks } from "@/config/site";
+import { MAIN_CATEGORIES } from "@/config/categories";
 
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
@@ -38,15 +39,34 @@ export default function MobileMenu() {
               <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Shop
               </p>
-              {categories.map((c) => (
-                <Link
-                  key={c.href}
-                  href={c.href}
-                  onClick={() => setOpen(false)}
-                  className="block rounded-xl px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
-                  {c.label}
-                </Link>
+              <Link
+                href="/products"
+                onClick={() => setOpen(false)}
+                className="block rounded-xl px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                All Products
+              </Link>
+
+              {MAIN_CATEGORIES.map((main) => (
+                <div key={main.slug} className="mt-1">
+                  <Link
+                    href={`/products?category=${main.slug}`}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-xl px-3 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-100"
+                  >
+                    {main.label}
+                  </Link>
+                  {main.children.map((sub) => (
+                    <Link
+                      key={sub.slug}
+                      href={`/products?category=${main.slug}&subcategory=${sub.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-xl py-2 pl-8 pr-3 text-sm text-gray-600 hover:bg-gray-100"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
               ))}
 
               <p className="px-3 pb-2 pt-5 text-xs font-semibold uppercase tracking-wider text-gray-400">

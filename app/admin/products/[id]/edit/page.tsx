@@ -30,8 +30,9 @@ export default async function EditProductPage({
             name: p.name ?? "",
             price: String(p.price ?? ""),
             category: p.category ?? "",
+            subcategory: p.subcategory ?? "",
             description: p.description ?? "",
-            image: p.image ?? p.image_url ?? p.img ?? "",
+            image: p.image ?? "",
             image_2: p.image_2 ?? "",
             image_3: p.image_3 ?? "",
           }}

@@ -1,58 +1,128 @@
-import Link from "next/link";
-import { Menu, ChevronDown, ChevronRight } from "lucide-react";
-import { categories } from "@/config/site";
+"use client";
 
-type Item = { label: string; href: string; children?: { label: string; href: string }[] };
+import { useState } from "react";
+import Link from "next/link";
+
+// Matches your Nov 2026 decision: Men and Women only, with sub-categories
+const categories = [
+  {
+    name: "Men",
+    slug: "men",
+    sub: [
+      { name: "Shirts", slug: "shirts" },
+      { name: "Polos", slug: "polos" },
+      { name: "Tees", slug: "tees" },
+      { name: "Panjabi", slug: "panjabi" },
+      { name: "Bottoms", slug: "bottoms" },
+      { name: "Outerwear", slug: "outerwear" },
+      { name: "Accessories", slug: "accessories" },
+    ],
+  },
+  {
+    name: "Women",
+    slug: "women",
+    sub: [
+      { name: "Sharee", slug: "sharee" },
+      { name: "3-Piece", slug: "3-piece" },
+      { name: "Tops", slug: "tops" },
+      { name: "Bottoms", slug: "bottoms" },
+      { name: "Dresses", slug: "dresses" },
+      { name: "Outerwear", slug: "outerwear" },
+      { name: "Accessories", slug: "accessories" },
+    ],
+  },
+];
 
 export default function CategoryMenu() {
-  const items: Item[] = categories;
+  // Track which top-level category is hovered so we can show its sub-list
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="group relative">
-      {/* Button */}
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-full bg-gray-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700"
-      >
-        <Menu size={18} />
+    <div
+      className="relative"
+      onMouseEnter={() => setMenuOpen(true)}
+      onMouseLeave={() => {
+        setMenuOpen(false);
+        setActiveCategory(null);
+      }}
+    >
+      {/* Trigger button in the header */}
+      <button className="flex items-center gap-1 text-sm font-medium text-white hover:text-yellow-300 transition-colors">
         Categories
-        <ChevronDown size={16} />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
       </button>
 
-      {/* Level 1: opens on hover */}
-      <div className="absolute left-0 top-full hidden pt-2 group-hover:block">
-        <ul className="w-72 rounded-xl border border-gray-800 bg-gray-900 py-2 shadow-xl">
-          {items.map((c) => (
-            <li key={c.href} className="group/item relative">
-              <Link
-                href={c.href}
-                className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-200 transition hover:bg-gray-800 hover:text-white"
+      {/* Dropdown — only shown when menuOpen */}
+      {menuOpen && (
+        <div className="absolute top-full left-0 mt-1 z-50 flex shadow-xl rounded-md overflow-hidden">
+          {/* Left column: top-level categories */}
+          <ul className="bg-white w-44 py-1 border border-gray-200">
+            {categories.map((cat) => (
+              <li
+                key={cat.slug}
+                onMouseEnter={() => setActiveCategory(cat.slug)}
+                className={`flex items-center justify-between px-4 py-2 cursor-pointer text-sm text-gray-700 hover:bg-gray-100 ${
+                  activeCategory === cat.slug ? "bg-gray-100 font-semibold" : ""
+                }`}
               >
-                {c.label}
-                {c.children && <ChevronRight size={16} />}
-              </Link>
+                <Link
+                  href={`/products?category=${cat.slug}`}
+                  className="flex-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {cat.name}
+                </Link>
+                {/* Right arrow to signal sub-menu exists */}
+                <svg
+                  className="w-3 h-3 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </li>
+            ))}
+          </ul>
 
-              {/* Level 2: opens on the right side */}
-              {c.children && (
-                <div className="absolute left-full top-0 hidden pl-1 group-hover/item:block">
-                  <ul className="w-56 rounded-xl border border-gray-800 bg-gray-900 py-2 shadow-xl">
-                    {c.children.map((s) => (
-                      <li key={s.href}>
-                        <Link
-                          href={s.href}
-                          className="block px-4 py-2.5 text-sm text-gray-200 transition hover:bg-gray-800 hover:text-white"
-                        >
-                          {s.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
+          {/* Right column: sub-categories for the hovered parent */}
+          {activeCategory && (
+            <ul className="bg-white w-44 py-1 border-t border-b border-r border-gray-200">
+              {categories
+                .find((c) => c.slug === activeCategory)
+                ?.sub.map((sub) => (
+                  <li key={sub.slug}>
+                    <Link
+                      href={`/products?category=${activeCategory}&sub=${sub.slug}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {sub.name}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

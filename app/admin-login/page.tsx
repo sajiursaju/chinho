@@ -1,5 +1,4 @@
 "use client";
-import { something } from "@/lib/permissions";
 import { useState } from "react";
 import { isStaff } from "@/lib/permissions";
 

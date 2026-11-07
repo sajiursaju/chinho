@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
-import { searchCategories } from "@/config/site";
+import { MAIN_CATEGORIES } from "@/config/categories";
+
+// "All" plus the two main categories, from the same list the shop uses.
+const searchOptions = [
+  { label: "All", value: "" },
+  ...MAIN_CATEGORIES.map((c) => ({ label: c.label, value: c.slug })),
+];
 
 export default function SearchBar() {
   const router = useRouter();
@@ -34,7 +40,7 @@ export default function SearchBar() {
           aria-label="Search category"
           className="h-full max-w-[190px] cursor-pointer appearance-none truncate rounded-l-full bg-transparent pl-4 pr-9 text-sm font-medium text-gray-700 outline-none hover:bg-gray-100"
         >
-          {searchCategories.map((c) => (
+          {searchOptions.map((c) => (
             <option key={c.value} value={c.value} className="bg-white text-gray-900">
               {c.label}
             </option>

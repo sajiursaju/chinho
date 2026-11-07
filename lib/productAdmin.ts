@@ -1,25 +1,35 @@
 import { pool } from "@/lib/db";
-import { allCategoryValues, productCategories } from "@/config/site";
+import { isValidCategoryPair } from "@/config/categories";
 
 export type ProductInput = {
   name: string;
   price: number;
   category: string;
+  subcategory: string;
   description: string | null;
   image: string | null;
   image_2: string | null;
   image_3: string | null;
 };
 
-// Pictures must be "/images/a.jpg" or "https://..." ("//x.com" is blocked)
+// Pictures must be "/uploads/a.jpg" or "https://...". "//x.com" is blocked.
 const IMAGE_RULE = /^(\/(?!\/)|https?:\/\/)/;
 
+// Checks the submitted product and returns clean values, or an error message.
 export function parseProductInput(
   body: any
 ): { data: ProductInput } | { error: string } {
   const name = typeof body?.name === "string" ? body.name.trim() : "";
-  const price = Number(body?.price);
-  const category = typeof body?.category === "string" ? body.category : "";
+
+  // An empty price is rejected. Without this check, Number("") would become 0.
+  const priceText =
+    typeof body?.price === "string" || typeof body?.price === "number"
+      ? String(body.price).trim()
+      : "";
+  const price = priceText === "" ? NaN : Number(priceText);
+
+  const category = typeof body?.category === "string" ? body.category.trim() : "";
+  const subcategory = typeof body?.subcategory === "string" ? body.subcategory.trim() : "";
   const description =
     typeof body?.description === "string" ? body.description.trim() : "";
 
@@ -27,8 +37,8 @@ export function parseProductInput(
     return { error: "Name is required (max 150 characters)" };
   if (!Number.isFinite(price) || price < 0 || price > 9999999)
     return { error: "Enter a valid price" };
-  if (!allCategoryValues.includes(category))
-    return { error: "Choose a valid category" };
+  if (!isValidCategoryPair(category, subcategory))
+    return { error: "Choose a valid category and subcategory" };
   if (description.length > 5000)
     return { error: "Description is too long (max 5000 characters)" };
 
@@ -49,17 +59,13 @@ export function parseProductInput(
       name,
       price: Math.round(price * 100) / 100,
       category,
+      subcategory,
       description: description || null,
       image: pictures[0],
       image_2: pictures[1],
       image_3: pictures[2],
     },
   };
-}
-
-export async function listProducts(): Promise<Record<string, any>[]> {
-  const [rows]: any = await pool.query("SELECT * FROM products ORDER BY id DESC");
-  return rows;
 }
 
 export async function getProduct(id: number): Promise<Record<string, any> | null> {
@@ -72,37 +78,22 @@ export async function getProduct(id: number): Promise<Record<string, any> | null
 
 export async function createProduct(d: ProductInput): Promise<number> {
   const [result]: any = await pool.query(
-    "INSERT INTO products (name, price, category, description, image, image_2, image_3) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [d.name, d.price, d.category, d.description, d.image, d.image_2, d.image_3]
+    "INSERT INTO products (name, price, category, subcategory, description, image, image_2, image_3) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [d.name, d.price, d.category, d.subcategory, d.description, d.image, d.image_2, d.image_3]
   );
   return result.insertId;
 }
 
 export async function updateProduct(id: number, d: ProductInput): Promise<boolean> {
   const [result]: any = await pool.query(
-    "UPDATE products SET name = ?, price = ?, category = ?, description = ?, image = ?, image_2 = ?, image_3 = ? WHERE id = ?",
-    [d.name, d.price, d.category, d.description, d.image, d.image_2, d.image_3, id]
+    "UPDATE products SET name = ?, price = ?, category = ?, subcategory = ?, description = ?, image = ?, image_2 = ?, image_3 = ? WHERE id = ?",
+    [d.name, d.price, d.category, d.subcategory, d.description, d.image, d.image_2, d.image_3, id]
   );
   return result.affectedRows > 0;
 }
 
+// Throws ER_ROW_IS_REFERENCED_2 when the product is already inside a customer order.
 export async function deleteProduct(id: number): Promise<boolean> {
   const [result]: any = await pool.query("DELETE FROM products WHERE id = ?", [id]);
   return result.affectedRows > 0;
-}
-
-export function imageSrc(value: unknown): string | null {
-  if (typeof value !== "string" || !value.trim()) return null;
-  const v = value.trim();
-  if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("/")) return v;
-  return `/${v}`;
-}
-
-export function categoryLabel(slug: string): string {
-  for (const c of productCategories) {
-    if (c.value === slug) return c.label;
-    const child = c.children?.find((s) => s.value === slug);
-    if (child) return child.label;
-  }
-  return slug || "No category";
 }

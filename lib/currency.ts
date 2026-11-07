@@ -1,11 +1,21 @@
-// One place to control how prices look across the whole site.
-export const CURRENCY_SYMBOL = "৳";
+/**
+ * Utility function to format numbers into standard currency format.
+ * Adjust currency code and locale as needed (e.g., BDT / en-BD or USD / en-US).
+ */
+export function formatPrice(
+  amount: number | string,
+  currency: string = "BDT",
+  locale: string = "bn-BD"
+): string {
+  const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;
 
-export function formatPrice(amount: number | string | null | undefined): string {
-  const value = Number(amount ?? 0);
+  if (isNaN(numericAmount)) {
+    return "0.00";
+  }
 
-  return `${CURRENCY_SYMBOL}${value.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency,
     maximumFractionDigits: 2,
-  })}`;
+  }).format(numericAmount);
 }
