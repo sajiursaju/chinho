@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/adminProducts";
 import { getAllOrders } from "@/lib/orders";
 import { formatPrice } from "@/lib/currency";
 import OrderStatusForm from "@/components/admin/OrderStatusForm";
+import { paymentMethodLabel, paymentStatusLabel } from "@/lib/shopSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,8 @@ export default async function AdminOrdersPage() {
                 <th className="py-2">Order #</th>
                 <th>Customer</th>
                 <th>Items</th>
+                <th>Payment</th>
+                <th>Delivery</th>
                 <th>Price</th>
                 <th>Status</th>
                 <th>Update</th>
@@ -46,7 +49,10 @@ export default async function AdminOrdersPage() {
               {orders.map((o) => (
                 <tr key={o.id} className="border-b align-top">
                   <td className="py-2">#{o.id}</td>
-                  <td>{o.customer_name ?? "—"}</td>
+                  <td>
+                    <div className="font-medium">{o.customer_name ?? "—"}</div>
+                    <div className="text-xs text-gray-500">{o.customer_phone ?? "No phone"}</div>
+                  </td>
                   <td>
                     {o.items.map((it, i) => (
                       <div key={i}>
@@ -54,28 +60,25 @@ export default async function AdminOrdersPage() {
                       </div>
                     ))}
                   </td>
+                  <td>
+                    <div>{paymentMethodLabel(o.payment_method)}</div>
+                    <div className="text-xs text-gray-500">{paymentStatusLabel(o.payment_status)}</div>
+                    {o.payment_reference && <div className="text-xs text-gray-500">Ref: {o.payment_reference}</div>}
+                  </td>
+                  <td>
+                    <div>{o.delivery_area === "outside_dhaka" ? "Outside Dhaka" : "Dhaka"}</div>
+                    <div className="text-xs text-gray-500">Charge: {formatPrice(Number(o.delivery_charge ?? 0))}</div>
+                  </td>
                   <td>{formatPrice(o.total)}</td>
                   <td>
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(
-                        o.status
-                      )}`}
-                    >
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(o.status)}`}>
                       {o.status ?? "pending"}
                     </span>
                   </td>
                   <td className="py-2">
-                    <OrderStatusForm
-                      orderId={o.id}
-                      currentStatus={o.status}
-                      currentTracking={o.tracking_number}
-                    />
+                    <OrderStatusForm orderId={o.id} currentStatus={o.status} currentTracking={o.tracking_number} />
                   </td>
-                  <td>
-                    {o.created_at
-                      ? new Date(o.created_at).toLocaleDateString()
-                      : "—"}
-                  </td>
+                  <td>{o.created_at ? new Date(o.created_at).toLocaleDateString() : "—"}</td>
                 </tr>
               ))}
             </tbody>
