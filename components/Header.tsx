@@ -1,6 +1,7 @@
 // components/Header.tsx
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CartLink from "@/components/CartLink";

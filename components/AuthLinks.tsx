@@ -78,12 +78,22 @@ export default function AuthLinks() {
   }
 
   const firstName = user.name.trim().split(" ")[0] || "Account";
-  const initial = user.name.trim().charAt(0).toUpperCase() || "A";
+  const initials = user.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("") || "A";
   const profileHref = `/users/${user.id}`;
   const editHref = `${profileHref}/edit`;
 
   return (
-    <div ref={menuRef} className="relative">
+    <div
+      ref={menuRef}
+      className="relative"
+      onMouseEnter={() => setMenuOpen(true)}
+      onMouseLeave={() => setMenuOpen(false)}
+    >
       <button
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
@@ -96,7 +106,7 @@ export default function AuthLinks() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src="/api/account/avatar" alt="" className="h-9 w-9 rounded-full border border-white/30 object-cover" />
         ) : (
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold">{initial}</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold">{initials}</span>
         )}
         <span className="hidden text-sm font-medium sm:inline">Hi, {firstName}</span>
         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

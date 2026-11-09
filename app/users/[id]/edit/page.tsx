@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { pool } from "@/lib/db";
-import EditProfileForm from "@/components/account/EditProfileForm";
+import EditProfileForm from "@/components/users/EditProfileForm";
 
 export default async function EditAccountPage({
   params,
@@ -13,7 +13,7 @@ export default async function EditAccountPage({
 
   if (!session) redirect("/login");
   if (session.role === "admin") redirect("/admin");
-  if (String(session.id) !== id) redirect(`/account/${session.id}/edit`);
+  if (String(session.id) !== id) redirect(`/users/${session.id}/edit`);
 
   const [rows]: any = await pool.query(
     "SELECT id, name, email, phone, address FROM users WHERE id = ?",
