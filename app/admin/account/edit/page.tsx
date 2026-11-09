@@ -11,7 +11,7 @@ export default async function EditAdminAccountPage() {
   if (!admin) redirect("/");
 
   const [rows]: any = await pool.query(
-    "SELECT name, email, phone, address FROM users WHERE id = ? LIMIT 1",
+    "SELECT name, email FROM admins WHERE id = ? LIMIT 1",
     [admin.id]
   );
   const profile = rows[0];
@@ -20,21 +20,10 @@ export default async function EditAdminAccountPage() {
   return (
     <main className="mx-auto max-w-4xl space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Edit account</h2>
-        <Link
-          href="/admin/account"
-          className="text-sm text-gray-600 hover:text-gray-900"
-        >
-          ← Back to account
-        </Link>
+        <h2 className="text-2xl font-bold text-gray-900">Edit admin account</h2>
+        <Link href="/admin/account" className="text-sm text-gray-600 hover:text-gray-900">← Back to account</Link>
       </div>
-
-      <AccountForms
-        name={profile.name ?? ""}
-        email={profile.email ?? ""}
-        phone={profile.phone ?? ""}
-        address={profile.address ?? ""}
-      />
+      <AccountForms name={profile.name ?? ""} email={profile.email ?? ""} isAdmin />
     </main>
   );
 }
