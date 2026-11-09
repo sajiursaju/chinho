@@ -12,14 +12,32 @@ export default function AuthLinks() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/me")
-      .then((res) => res.json())
-      .then((data) => setUser(data.user));
+    let ignore = false;
+
+    function loadUser() {
+      fetch("/api/me", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!ignore) setUser(data.user ?? null);
+        })
+        .catch(() => {
+          if (!ignore) setUser(null);
+        });
+    }
+
+    loadUser();
+    window.addEventListener("auth-changed", loadUser);
+
+    return () => {
+      ignore = true;
+      window.removeEventListener("auth-changed", loadUser);
+    };
   }, [pathname]);
 
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });
     setUser(null);
+    window.dispatchEvent(new Event("auth-changed"));
     router.push("/");
     router.refresh();
   }

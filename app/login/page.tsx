@@ -28,12 +28,16 @@ export default function LoginPage() {
       setError(data.error || "Something went wrong");
       return;
     }
+
+    // Tell the header to check /api/me again now that the cookie is set
+    window.dispatchEvent(new Event("auth-changed"));
+
     if (data.role === "admin") {
       router.push("/admin");
     } else {
       router.push("/");
     }
-    
+
     router.refresh();
   }
 

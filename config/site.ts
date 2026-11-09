@@ -1,3 +1,5 @@
+// config/site.ts
+
 export const siteConfig = {
   name: "chinho",
   slogan: "We don't design clothes... We design dreams 🌼🏵️",

@@ -1,6 +1,6 @@
 "use client";
+
 import { useState } from "react";
-import { isStaff } from "@/lib/permissions";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,28 +23,10 @@ export default function AdminLogin() {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        setError("Wrong email or password");
-        return;
-      }
-
-      const meRes = await fetch("/api/me", {
-        method: "GET",
-        cache: "no-store",
-      });
-
-      if (!meRes.ok) {
-        await fetch("/api/logout", { method: "POST" });
-        setError("Unable to verify your account. Please log in again.");
-        return;
-      }
-
-      const me = await meRes.json();
-      const role = me.user?.role ?? me.role;
-
-      if (!isStaff(role)) {
-        await fetch("/api/logout", { method: "POST" });
-        setError("This is not a staff account");
+        setError(data.error || "Wrong email or password");
         return;
       }
 
@@ -63,9 +45,7 @@ export default function AdminLogin() {
         className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow-xl"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Staff Login
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Staff Login</h1>
           <p className="mt-2 text-sm text-gray-500">
             Sign in to access the admin dashboard
           </p>

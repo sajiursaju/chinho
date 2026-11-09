@@ -1,42 +1,16 @@
+// components/CategoryMenu.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-
-// Matches your Nov 2026 decision: Men and Women only, with sub-categories
-const categories = [
-  {
-    name: "Men",
-    slug: "men",
-    sub: [
-      { name: "Shirts", slug: "shirts" },
-      { name: "Polos", slug: "polos" },
-      { name: "Tees", slug: "tees" },
-      { name: "Panjabi", slug: "panjabi" },
-      { name: "Bottoms", slug: "bottoms" },
-      { name: "Outerwear", slug: "outerwear" },
-      { name: "Accessories", slug: "accessories" },
-    ],
-  },
-  {
-    name: "Women",
-    slug: "women",
-    sub: [
-      { name: "Sharee", slug: "sharee" },
-      { name: "3-Piece", slug: "3-piece" },
-      { name: "Tops", slug: "tops" },
-      { name: "Bottoms", slug: "bottoms" },
-      { name: "Dresses", slug: "dresses" },
-      { name: "Outerwear", slug: "outerwear" },
-      { name: "Accessories", slug: "accessories" },
-    ],
-  },
-];
+import { MAIN_CATEGORIES } from "@/config/categories";
 
 export default function CategoryMenu() {
-  // Track which top-level category is hovered so we can show its sub-list
+  // Which top-level category is hovered, so we can show its sub-list
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const activeMain = MAIN_CATEGORIES.find((c) => c.slug === activeCategory);
 
   return (
     <div
@@ -65,12 +39,12 @@ export default function CategoryMenu() {
         </svg>
       </button>
 
-      {/* Dropdown — only shown when menuOpen */}
+      {/* Dropdown, only shown when menuOpen */}
       {menuOpen && (
         <div className="absolute top-full left-0 mt-1 z-50 flex shadow-xl rounded-md overflow-hidden">
           {/* Left column: top-level categories */}
           <ul className="bg-white w-44 py-1 border border-gray-200">
-            {categories.map((cat) => (
+            {MAIN_CATEGORIES.map((cat) => (
               <li
                 key={cat.slug}
                 onMouseEnter={() => setActiveCategory(cat.slug)}
@@ -83,9 +57,8 @@ export default function CategoryMenu() {
                   className="flex-1"
                   onClick={() => setMenuOpen(false)}
                 >
-                  {cat.name}
+                  {cat.label}
                 </Link>
-                {/* Right arrow to signal sub-menu exists */}
                 <svg
                   className="w-3 h-3 text-gray-400"
                   fill="none"
@@ -103,22 +76,20 @@ export default function CategoryMenu() {
             ))}
           </ul>
 
-          {/* Right column: sub-categories for the hovered parent */}
-          {activeCategory && (
+          {/* Right column: subcategories of the hovered parent */}
+          {activeMain && (
             <ul className="bg-white w-44 py-1 border-t border-b border-r border-gray-200">
-              {categories
-                .find((c) => c.slug === activeCategory)
-                ?.sub.map((sub) => (
-                  <li key={sub.slug}>
-                    <Link
-                      href={`/products?category=${activeCategory}&sub=${sub.slug}`}
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      {sub.name}
-                    </Link>
-                  </li>
-                ))}
+              {activeMain.children.map((sub) => (
+                <li key={sub.slug}>
+                  <Link
+                    href={`/products?category=${activeMain.slug}&subcategory=${sub.slug}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {sub.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </div>

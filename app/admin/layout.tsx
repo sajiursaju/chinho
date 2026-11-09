@@ -19,8 +19,9 @@ export default async function AdminLayout({
 
   if (!admin) redirect("/");
 
+  // Admin accounts are stored in the admins table, not users.
   const [rows]: any = await pool.query(
-    "SELECT name, email FROM users WHERE id = ? LIMIT 1",
+    "SELECT name, email FROM admins WHERE id = ? LIMIT 1",
     [admin.id]
   );
 
@@ -30,8 +31,14 @@ export default async function AdminLayout({
   const links = [
     { label: "Dashboard", href: "/admin", icon: "▦" },
     { label: "Products", href: "/admin/products", icon: "□" },
+    { label: "Categories", href: "/admin/categories", icon: "▣" },
+    { label: "Inventory", href: "/admin/inventory", icon: "▤" },
+    { label: "Orders", href: "/admin/orders", icon: "◫" },
     { label: "Customers", href: "/admin/customers", icon: "♙" },
-    { label: "Orders", href: "/admin/orders", icon: "▤" },
+    { label: "Discounts", href: "/admin/discounts", icon: "◌" },
+    { label: "Reviews", href: "/admin/reviews", icon: "★" },
+    { label: "Reports", href: "/admin/reports", icon: "▨" },
+    { label: "Settings", href: "/admin/settings", icon: "⚙" },
     { label: "Account", href: "/admin/account", icon: "◉" },
   ];
 
@@ -72,7 +79,6 @@ export default async function AdminLayout({
           <p className="mt-1 break-all text-xs text-gray-400">
             {profile?.email ?? "Email unavailable"}
           </p>
-          {/* Link -> /admin/account (stays inside the dashboard) */}
           <Link
             href="/admin/account"
             className="mt-4 inline-block text-sm text-gray-300 hover:text-white"
@@ -86,7 +92,6 @@ export default async function AdminLayout({
         <header className="flex items-center justify-between border-b bg-white px-6 py-4">
           <h1 className="font-semibold text-gray-800">Store Administration</h1>
           <div className="flex items-center gap-4">
-            {/* Link -> / (user site) */}
             <Link
               href="/"
               className="text-sm text-gray-600 hover:text-gray-900"
