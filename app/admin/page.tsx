@@ -121,7 +121,16 @@ export default async function AdminDashboard() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <Link
+          href="/admin/settings"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+        >
+          <span aria-hidden="true">⚙</span>
+          Payments &amp; Delivery Settings
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
         <section className="min-w-0">
