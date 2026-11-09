@@ -1,38 +1,43 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminProducts";
-import { saveShopSettings, getShopSettings } from "@/lib/shopSettings";
+import { getShopSettings, saveShopSettings } from "@/lib/shopSettings";
 
 export async function GET() {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   try {
-    await requireAdmin();
-    const settings = await getShopSettings();
-    return NextResponse.json(settings);
-  } catch {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(await getShopSettings(), { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    console.error("Could not load shop settings:", error);
+    return NextResponse.json({ error: "Could not load settings" }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   try {
-    await requireAdmin();
-
-    const payload = await request.json().catch(() => ({}));
+    const payload = await request.json();
+    const asBool = (value: unknown) => value === true || value === "true";
     const settings = await saveShopSettings({
-      freeShippingThreshold: Number(payload.freeShippingThreshold ?? 2000),
-      dhakaDeliveryCharge: Number(payload.dhakaDeliveryCharge ?? 60),
-      outsideDhakaDeliveryCharge: Number(payload.outsideDhakaDeliveryCharge ?? 120),
-      enableCod: Boolean(payload.enableCod ?? true),
-      enableBkash: Boolean(payload.enableBkash ?? true),
-      enableNagad: Boolean(payload.enableNagad ?? true),
-      codInstruction: String(payload.codInstruction ?? ""),
-      bkashNumber: String(payload.bkashNumber ?? ""),
-      bkashInstruction: String(payload.bkashInstruction ?? ""),
-      nagadNumber: String(payload.nagadNumber ?? ""),
-      nagadInstruction: String(payload.nagadInstruction ?? ""),
+      freeShippingThreshold: Number(payload.freeShippingThreshold),
+      dhakaDeliveryCharge: Number(payload.dhakaDeliveryCharge),
+      outsideDhakaDeliveryCharge: Number(payload.outsideDhakaDeliveryCharge),
+      enableCod: asBool(payload.enableCod),
+      enableBkash: asBool(payload.enableBkash),
+      enableNagad: asBool(payload.enableNagad),
+      codInstruction: String(payload.codInstruction ?? "").trim(),
+      bkashNumber: String(payload.bkashNumber ?? "").trim(),
+      bkashAction: payload.bkashAction === "Cash Out" ? "Cash Out" : "Send Money",
+      bkashInstruction: String(payload.bkashInstruction ?? "").trim(),
+      nagadNumber: String(payload.nagadNumber ?? "").trim(),
+      nagadAction: payload.nagadAction === "Cash Out" ? "Cash Out" : "Send Money",
+      nagadInstruction: String(payload.nagadInstruction ?? "").trim(),
     });
-
     return NextResponse.json({ ok: true, settings });
-  } catch {
-    return NextResponse.json({ error: "Could not save settings" }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not save settings" }, { status: 400 });
   }
 }

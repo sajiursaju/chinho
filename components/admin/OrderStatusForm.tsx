@@ -3,95 +3,45 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const STATUSES = [
-  "pending",
-  "processing",
-  "shipped",
-  "delivered",
-  "cancelled",
-] as const;
+const STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
+const PAYMENT_STATUSES = ["pending", "confirmed", "rejected", "paid"] as const;
 
-type Props = {
-  orderId: number;
-  currentStatus?: string | null;
-  currentTracking?: string | null;
-};
+type Props = { orderId: number; currentStatus?: string | null; currentTracking?: string | null; currentPaymentStatus?: string | null };
 
-export default function OrderStatusForm({
-  orderId,
-  currentStatus,
-  currentTracking,
-}: Props) {
+export default function OrderStatusForm({ orderId, currentStatus, currentTracking, currentPaymentStatus }: Props) {
   const router = useRouter();
-
-  // Normalize values that may be null/undefined/uppercase
   const initialStatus = (currentStatus ?? "pending").toLowerCase();
   const initialTracking = currentTracking ?? "";
-
+  const initialPaymentStatus = (currentPaymentStatus ?? "pending").toLowerCase();
   const [status, setStatus] = useState(initialStatus);
   const [tracking, setTracking] = useState(initialTracking);
+  const [paymentStatus, setPaymentStatus] = useState(initialPaymentStatus);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const unchanged = status === initialStatus && tracking === initialTracking;
+  const unchanged = status === initialStatus && tracking === initialTracking && paymentStatus === initialPaymentStatus;
 
   async function handleSave() {
-    setLoading(true);
-    setError("");
-
+    setLoading(true); setError("");
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, trackingNumber: tracking }),
+      const response = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, trackingNumber: tracking, paymentStatus }),
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
         throw new Error(data.error || "Failed to update order");
       }
-
-      // Re-run the server page so the table shows the new values
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
-  return (
-    <div className="flex flex-col gap-2">
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        className="rounded border px-2 py-1 text-sm"
-      >
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>
-            {s}
-          </option>
-        ))}
-      </select>
-
-      <input
-        type="text"
-        value={tracking}
-        onChange={(e) => setTracking(e.target.value)}
-        placeholder="Tracking number (optional)"
-        maxLength={100}
-        className="rounded border px-2 py-1 text-sm"
-      />
-
-      <button
-        onClick={handleSave}
-        disabled={loading || unchanged}
-        className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
-      >
-        {loading ? "Saving..." : "Save"}
-      </button>
-
-      {error && <span className="text-xs text-red-600">{error}</span>}
-    </div>
-  );
+  return <div className="flex min-w-40 flex-col gap-2">
+    <select aria-label="Order status" value={status} onChange={(e) => setStatus(e.target.value)} className="rounded border px-2 py-1 text-sm">{STATUSES.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+    <select aria-label="Payment verification status" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} className="rounded border px-2 py-1 text-sm">{PAYMENT_STATUSES.map((value) => <option key={value} value={value}>{value === "pending" ? "payment pending" : `payment ${value}`}</option>)}</select>
+    <input aria-label="Tracking number" value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number (optional)" maxLength={100} className="rounded border px-2 py-1 text-sm" />
+    <button type="button" onClick={handleSave} disabled={loading || unchanged} className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50">{loading ? "Saving…" : "Save"}</button>
+    {error && <span role="alert" className="text-xs text-red-600">{error}</span>}
+  </div>;
 }
