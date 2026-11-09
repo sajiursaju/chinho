@@ -16,7 +16,7 @@ export default function AuthLinks() {
 
     function loadUser() {
       fetch("/api/me", { cache: "no-store" })
-        .then((res) => res.json())
+        .then((response) => response.json())
         .then((data) => {
           if (!ignore) setUser(data.user ?? null);
         })
@@ -27,7 +27,6 @@ export default function AuthLinks() {
 
     loadUser();
     window.addEventListener("auth-changed", loadUser);
-
     return () => {
       ignore = true;
       window.removeEventListener("auth-changed", loadUser);
@@ -35,7 +34,7 @@ export default function AuthLinks() {
   }, [pathname]);
 
   async function handleLogout() {
-    await fetch("/api/logout", { method: "POST" });
+    await fetch("/api/logout", { method: "POST" }).catch(() => undefined);
     setUser(null);
     window.dispatchEvent(new Event("auth-changed"));
     router.push("/");
@@ -43,54 +42,29 @@ export default function AuthLinks() {
   }
 
   if (user) {
-    const isAdmin = user.role === "admin";
-    const firstName = user.name.trim().split(" ")[0];
-    const initial = user.name.trim().charAt(0).toUpperCase();
+    const firstName = user.name.trim().split(" ")[0] || "Account";
+    const initial = user.name.trim().charAt(0).toUpperCase() || "A";
 
     return (
       <div className="flex items-center gap-2 whitespace-nowrap text-sm sm:gap-3">
-        <Link href="/account" className="flex items-center gap-2" aria-label="My account">
+        <Link href={`/users/${user.id}`} className="flex items-center gap-2 hover:text-indigo-200" aria-label="My account">
           {user.hasAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/api/account/avatar"
-              alt=""
-              className="h-8 w-8 shrink-0 rounded-full border object-cover"
-            />
+            <img src="/api/account/avatar" alt="" className="h-8 w-8 shrink-0 rounded-full border border-white/30 object-cover" />
           ) : (
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-gray-100 text-sm font-semibold text-gray-700">
-              {initial}
-            </span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-sm font-semibold text-white">{initial}</span>
           )}
           <span className="hidden sm:inline">Hi, {firstName}</span>
         </Link>
-
-        {!isAdmin && (
-          <>
-            <Link href="/orders" className="hidden underline sm:inline">
-              My Orders
-            </Link>
-            <Link href="/account" className="hidden underline sm:inline">
-              Account
-            </Link>
-          </>
-        )}
-
-        <button onClick={handleLogout} className="underline">
-          Logout
-        </button>
+        <button type="button" onClick={handleLogout} className="underline underline-offset-2 hover:text-indigo-200">Log out</button>
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-2 whitespace-nowrap text-sm sm:gap-3">
-      <Link href="/login" className="underline">
-        Login
-      </Link>
-      <Link href="/signup" className="underline">
-        Sign up
-      </Link>
+      <Link href="/login" className="underline underline-offset-2 hover:text-indigo-200">Log in</Link>
+      <Link href="/signup" className="rounded bg-indigo-500 px-3 py-1.5 transition hover:bg-indigo-600">Sign up</Link>
     </div>
   );
 }
