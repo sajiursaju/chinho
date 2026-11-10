@@ -1,4 +1,5 @@
 import { getAllCustomers } from "@/lib/customers";
+import { formatPrice } from "@/lib/currency";
 
 export default async function AdminCustomersPage() {
   const customers = await getAllCustomers();
@@ -29,7 +30,8 @@ export default async function AdminCustomersPage() {
                   <td>{c.name ?? "—"}</td>
                   <td>{c.email}</td>
                   <td>{c.order_count}</td>
-                  <td>${c.total_spent.toFixed(2)}</td>
+                  {/* ✅ was $${c.total_spent.toFixed(2)} */}
+                  <td>{formatPrice(c.total_spent)}</td>
                   <td>
                     {c.last_order
                       ? new Date(c.last_order).toLocaleDateString()

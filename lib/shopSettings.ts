@@ -14,6 +14,9 @@ export type ShopSettings = {
   nagadNumber: string;
   nagadAction: "Send Money" | "Cash Out";
   nagadInstruction: string;
+  announcementText: string;
+  storeOfferTitle: string;
+  storeOfferSubtitle: string;
 };
 
 const DEFAULT_SETTINGS: ShopSettings = {
@@ -30,6 +33,9 @@ const DEFAULT_SETTINGS: ShopSettings = {
   nagadNumber: "",
   nagadAction: "Send Money",
   nagadInstruction: "",
+  announcementText: "",
+  storeOfferTitle: "",
+  storeOfferSubtitle: "",
 };
 
 export async function ensureShopSettingsTable() {
@@ -38,8 +44,9 @@ export async function ensureShopSettingsTable() {
     setting_value TEXT NOT NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-  // Keep this migration non-destructive; existing orders and data are preserved.
+  // Add missing columns without dropping or recreating existing order data.
   await pool.query(`ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100) NULL,
     ADD COLUMN IF NOT EXISTS delivery_area VARCHAR(30) NOT NULL DEFAULT 'dhaka',
     ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10,2) NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30) NOT NULL DEFAULT 'cod',
@@ -56,7 +63,12 @@ export async function ensureShopSettingsTable() {
 
 function decode<T>(value: unknown, fallback: T): T {
   if (value == null) return fallback;
-  try { return JSON.parse(String(value)) as T; } catch { return fallback; }
+
+  try {
+    return JSON.parse(String(value)) as T;
+  } catch {
+    return fallback;
+  }
 }
 
 function nonNegativeNumber(value: unknown, fallback: number) {
@@ -65,53 +77,124 @@ function nonNegativeNumber(value: unknown, fallback: number) {
 }
 
 function walletAction(value: unknown): "Send Money" | "Cash Out" {
-  return String(value).toLowerCase() === "cash out" ? "Cash Out" : "Send Money";
+  return String(value).toLowerCase() === "cash out"
+    ? "Cash Out"
+    : "Send Money";
 }
 
 export async function getShopSettings(): Promise<ShopSettings> {
   await ensureShopSettingsTable();
-  const [rows]: any = await pool.query("SELECT setting_key, setting_value FROM shop_settings");
-  const values = Object.fromEntries((rows || []).map((row: any) => [row.setting_key, row.setting_value]));
+
+  const [rows]: any = await pool.query(
+    "SELECT setting_key, setting_value FROM shop_settings"
+  );
+
+  const values = Object.fromEntries(
+    (rows || []).map((row: any) => [row.setting_key, row.setting_value])
+  );
 
   return {
-    freeShippingThreshold: nonNegativeNumber(decode(values.freeShippingThreshold, DEFAULT_SETTINGS.freeShippingThreshold), DEFAULT_SETTINGS.freeShippingThreshold),
-    dhakaDeliveryCharge: nonNegativeNumber(decode(values.dhakaDeliveryCharge, DEFAULT_SETTINGS.dhakaDeliveryCharge), DEFAULT_SETTINGS.dhakaDeliveryCharge),
-    outsideDhakaDeliveryCharge: nonNegativeNumber(decode(values.outsideDhakaDeliveryCharge, DEFAULT_SETTINGS.outsideDhakaDeliveryCharge), DEFAULT_SETTINGS.outsideDhakaDeliveryCharge),
-    enableCod: decode(values.enableCod, DEFAULT_SETTINGS.enableCod) === true,
-    enableBkash: decode(values.enableBkash, DEFAULT_SETTINGS.enableBkash) === true,
-    enableNagad: decode(values.enableNagad, DEFAULT_SETTINGS.enableNagad) === true,
-    codInstruction: String(decode(values.codInstruction, DEFAULT_SETTINGS.codInstruction)),
-    bkashNumber: String(decode(values.bkashNumber, DEFAULT_SETTINGS.bkashNumber)),
-    bkashAction: walletAction(decode(values.bkashAction, DEFAULT_SETTINGS.bkashAction)),
-    bkashInstruction: String(decode(values.bkashInstruction, DEFAULT_SETTINGS.bkashInstruction)),
-    nagadNumber: String(decode(values.nagadNumber, DEFAULT_SETTINGS.nagadNumber)),
-    nagadAction: walletAction(decode(values.nagadAction, DEFAULT_SETTINGS.nagadAction)),
-    nagadInstruction: String(decode(values.nagadInstruction, DEFAULT_SETTINGS.nagadInstruction)),
+    freeShippingThreshold: nonNegativeNumber(
+      decode(values.freeShippingThreshold, DEFAULT_SETTINGS.freeShippingThreshold),
+      DEFAULT_SETTINGS.freeShippingThreshold
+    ),
+    dhakaDeliveryCharge: nonNegativeNumber(
+      decode(values.dhakaDeliveryCharge, DEFAULT_SETTINGS.dhakaDeliveryCharge),
+      DEFAULT_SETTINGS.dhakaDeliveryCharge
+    ),
+    outsideDhakaDeliveryCharge: nonNegativeNumber(
+      decode(
+        values.outsideDhakaDeliveryCharge,
+        DEFAULT_SETTINGS.outsideDhakaDeliveryCharge
+      ),
+      DEFAULT_SETTINGS.outsideDhakaDeliveryCharge
+    ),
+    enableCod:
+      decode(values.enableCod, DEFAULT_SETTINGS.enableCod) === true,
+    enableBkash:
+      decode(values.enableBkash, DEFAULT_SETTINGS.enableBkash) === true,
+    enableNagad:
+      decode(values.enableNagad, DEFAULT_SETTINGS.enableNagad) === true,
+    codInstruction: String(
+      decode(values.codInstruction, DEFAULT_SETTINGS.codInstruction) ?? ""
+    ),
+    bkashNumber: String(
+      decode(values.bkashNumber, DEFAULT_SETTINGS.bkashNumber) ?? ""
+    ),
+    bkashAction: walletAction(
+      decode(values.bkashAction, DEFAULT_SETTINGS.bkashAction)
+    ),
+    bkashInstruction: String(
+      decode(values.bkashInstruction, DEFAULT_SETTINGS.bkashInstruction) ?? ""
+    ),
+    nagadNumber: String(
+      decode(values.nagadNumber, DEFAULT_SETTINGS.nagadNumber) ?? ""
+    ),
+    nagadAction: walletAction(
+      decode(values.nagadAction, DEFAULT_SETTINGS.nagadAction)
+    ),
+    nagadInstruction: String(
+      decode(values.nagadInstruction, DEFAULT_SETTINGS.nagadInstruction) ?? ""
+    ),
+    announcementText: String(
+      decode(values.announcementText, DEFAULT_SETTINGS.announcementText) ?? ""
+    ),
+    storeOfferTitle: String(
+      decode(values.storeOfferTitle, DEFAULT_SETTINGS.storeOfferTitle) ?? ""
+    ),
+    storeOfferSubtitle: String(
+      decode(values.storeOfferSubtitle, DEFAULT_SETTINGS.storeOfferSubtitle) ?? ""
+    ),
   };
 }
 
 export async function saveShopSettings(input: ShopSettings) {
   await ensureShopSettingsTable();
-  const entries = Object.entries(input);
-  for (const [key, value] of entries) {
-    await pool.query(`INSERT INTO shop_settings (setting_key, setting_value) VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`, [key, JSON.stringify(value)]);
+
+  for (const [key, value] of Object.entries(input)) {
+    await pool.query(
+      `INSERT INTO shop_settings (setting_key, setting_value)
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+      [key, JSON.stringify(value)]
+    );
   }
+
   return input;
 }
 
-export function calculateDeliveryCharge(settings: ShopSettings, subtotal: number, area: "dhaka" | "outside_dhaka") {
-  if (settings.freeShippingThreshold > 0 && subtotal >= settings.freeShippingThreshold) return 0;
-  return area === "dhaka" ? settings.dhakaDeliveryCharge : settings.outsideDhakaDeliveryCharge;
+export function calculateDeliveryCharge(
+  settings: ShopSettings,
+  subtotal: number,
+  area: "dhaka" | "outside_dhaka"
+) {
+  if (
+    settings.freeShippingThreshold > 0 &&
+    subtotal >= settings.freeShippingThreshold
+  ) {
+    return 0;
+  }
+
+  return area === "dhaka"
+    ? settings.dhakaDeliveryCharge
+    : settings.outsideDhakaDeliveryCharge;
 }
 
-export function normalizePaymentMethod(value: unknown): "cod" | "bkash" | "nagad" | null {
+export function normalizePaymentMethod(
+  value: unknown
+): "cod" | "bkash" | "nagad" | null {
   const method = String(value ?? "").trim().toLowerCase();
-  return method === "cod" || method === "bkash" || method === "nagad" ? method : null;
+
+  return method === "cod" || method === "bkash" || method === "nagad"
+    ? method
+    : null;
 }
 
-export function normalizeDeliveryArea(value: unknown): "dhaka" | "outside_dhaka" | null {
+export function normalizeDeliveryArea(
+  value: unknown
+): "dhaka" | "outside_dhaka" | null {
   const area = String(value ?? "").trim().toLowerCase();
+
   return area === "dhaka" || area === "outside_dhaka" ? area : null;
 }
 
@@ -123,6 +206,7 @@ export function paymentMethodLabel(method: string | null | undefined) {
 
 export function paymentStatusLabel(status: string | null | undefined) {
   const normalized = String(status ?? "pending").toLowerCase();
+
   if (normalized === "paid") return "Paid";
   if (normalized === "confirmed") return "Confirmed";
   if (normalized === "rejected") return "Rejected";

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { RowDataPacket } from "mysql2";
 import { pool } from "@/lib/db";
 import { getMainCategory, getSubCategory } from "@/config/categories";
+import { formatPrice } from "@/lib/currency";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
 
@@ -96,8 +97,9 @@ export default async function ProductPage({
 
           <h1 className="text-3xl font-bold text-gray-900">{p.name}</h1>
 
+          {/* ✅ was ৳{price.toFixed(2)} */}
           <p className="mt-4 text-3xl font-bold text-gray-900">
-            ৳{price.toFixed(2)}
+            {formatPrice(price)}
           </p>
 
           {p.description && (

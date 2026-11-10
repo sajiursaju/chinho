@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { requireAdmin } from "@/lib/adminProducts";
+import { formatPrice } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,10 @@ export default async function AdminReportsPage() {
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-gray-500">Revenue</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">${revenue.toFixed(2)}</p>
+          {/* ✅ was ${revenue.toFixed(2)} */}
+          <p className="mt-2 text-3xl font-bold text-gray-900">
+            {formatPrice(revenue)}
+          </p>
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">

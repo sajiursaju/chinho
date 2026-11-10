@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartContext";
+import { formatPrice } from "@/lib/currency";
 
 type CheckoutSettings = {
   freeShippingThreshold: number;
@@ -36,8 +37,6 @@ const emptySettings: CheckoutSettings = {
   nagadAction: "Send Money",
   nagadInstruction: "",
 };
-
-const taka = (value: number) => `৳${Number(value).toFixed(2)}`;
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
@@ -169,7 +168,7 @@ export default function CartPage() {
             {selectedWallet && (
               <div className="mt-4 rounded-lg bg-amber-50 p-4 text-sm text-gray-800">
                 <p className="font-semibold">{selectedWallet.name}: {selectedWallet.action}</p>
-                <p className="mt-1">Send the total amount {taka(total)} to <strong>{selectedWallet.number || "Payment number not configured"}</strong>.</p>
+                <p className="mt-1">Send the total amount {formatPrice(total)} to <strong>{selectedWallet.number || "Payment number not configured"}</strong>.</p>
                 {selectedWallet.instruction && <p className="mt-2">{selectedWallet.instruction}</p>}
                 <label className="mt-3 block font-medium">Transaction ID / reference<input required maxLength={120} value={paymentReference} onChange={(e) => setPaymentReference(e.target.value)} className="mt-1 w-full rounded border bg-white px-3 py-2 font-normal" /></label>
                 <label className="mt-3 block font-medium">Sender number (optional)<input maxLength={30} value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} className="mt-1 w-full rounded border bg-white px-3 py-2 font-normal" /></label>
@@ -183,8 +182,8 @@ export default function CartPage() {
 
         <aside className="h-fit rounded-xl border bg-white p-5">
           <h2 className="mb-4 text-lg font-semibold">Order summary</h2>
-          <ul className="divide-y text-sm">{items.map((item) => <li key={item.id} className="flex justify-between gap-3 py-3"><span>{item.name} × {item.quantity}</span><span>{taka(item.price * item.quantity)}</span></li>)}</ul>
-          <div className="space-y-2 border-t pt-4 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{taka(totalPrice)}</span></div><div className="flex justify-between"><span>Delivery ({deliveryArea === "dhaka" ? "Dhaka" : "Outside Dhaka"})</span><span>{deliveryCharge === 0 ? "Free" : taka(deliveryCharge)}</span></div>{settings.freeShippingThreshold > 0 && <p className="text-xs text-gray-500">Free delivery on orders of {taka(settings.freeShippingThreshold)} or more.</p>}<div className="flex justify-between border-t pt-3 text-base font-bold"><span>Total</span><span>{taka(total)}</span></div></div>
+          <ul className="divide-y text-sm">{items.map((item) => <li key={item.id} className="flex justify-between gap-3 py-3"><span>{item.name} × {item.quantity}</span><span>{formatPrice(item.price * item.quantity)}</span></li>)}</ul>
+          <div className="space-y-2 border-t pt-4 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(totalPrice)}</span></div><div className="flex justify-between"><span>Delivery ({deliveryArea === "dhaka" ? "Dhaka" : "Outside Dhaka"})</span><span>{deliveryCharge === 0 ? "Free" : formatPrice(deliveryCharge)}</span></div>{settings.freeShippingThreshold > 0 && <p className="text-xs text-gray-500">Free delivery on orders of {formatPrice(settings.freeShippingThreshold)} or more.</p>}<div className="flex justify-between border-t pt-3 text-base font-bold"><span>Total</span><span>{formatPrice(total)}</span></div></div>
         </aside>
       </div>
     </main>

@@ -55,3 +55,14 @@ export function getSubCategory(
   if (!mainSlug || !subSlug) return undefined;
   return getMainCategory(mainSlug)?.children.find((s) => s.slug === subSlug);
 }
+
+// Checks that the category exists and the subcategory belongs to it.
+export function isValidCategoryPair(
+  mainSlug: string,
+  subSlug: string
+): boolean {
+  const main = getMainCategory(mainSlug);
+  if (!main || !subSlug) return false;
+
+  return main.children.some((subcategory) => subcategory.slug === subSlug);
+}

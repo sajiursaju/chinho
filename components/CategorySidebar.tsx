@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MAIN_CATEGORIES } from "@/config/categories";
 import { quickLinks } from "@/config/site";
+import { getShopSettings } from "@/lib/shopSettings";
 
 type Props = {
   activeCategory?: string;
@@ -16,12 +17,22 @@ function linkClass(active: boolean) {
   }`;
 }
 
-export default function CategorySidebar({ activeCategory, activeSubcategory }: Props) {
+export default async function CategorySidebar({
+  activeCategory,
+  activeSubcategory,
+}: Props) {
+  const settings = await getShopSettings();
+  const offerTitle = settings.storeOfferTitle.trim();
+  const offerSubtitle = settings.storeOfferSubtitle.trim();
+
   return (
     <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-4 space-y-4">
         {/* Shop by category */}
-        <nav aria-label="Shop by category" className="rounded-lg border border-gray-200 bg-white p-2">
+        <nav
+          aria-label="Shop by category"
+          className="rounded-lg border border-gray-200 bg-white p-2"
+        >
           <h2 className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
             Shop by category
           </h2>
@@ -39,7 +50,9 @@ export default function CategorySidebar({ activeCategory, activeSubcategory }: P
                   <details open={isOpen} className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-100 [&::-webkit-details-marker]:hidden">
                       <span>{main.label}</span>
-                      <span className="text-gray-400 transition-transform group-open:rotate-90">›</span>
+                      <span className="text-gray-400 transition-transform group-open:rotate-90">
+                        ›
+                      </span>
                     </summary>
                     <ul className="ml-3 border-l border-gray-200 pl-2">
                       <li>
@@ -54,7 +67,9 @@ export default function CategorySidebar({ activeCategory, activeSubcategory }: P
                         <li key={sub.slug}>
                           <Link
                             href={`/products?category=${main.slug}&subcategory=${sub.slug}`}
-                            className={linkClass(isOpen && activeSubcategory === sub.slug)}
+                            className={linkClass(
+                              isOpen && activeSubcategory === sub.slug
+                            )}
                           >
                             {sub.label}
                           </Link>
@@ -69,7 +84,10 @@ export default function CategorySidebar({ activeCategory, activeSubcategory }: P
         </nav>
 
         {/* Quick links */}
-        <nav aria-label="Quick links" className="rounded-lg border border-gray-200 bg-white p-2">
+        <nav
+          aria-label="Quick links"
+          className="rounded-lg border border-gray-200 bg-white p-2"
+        >
           <h2 className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
             Quick links
           </h2>
@@ -84,11 +102,15 @@ export default function CategorySidebar({ activeCategory, activeSubcategory }: P
           </ul>
         </nav>
 
-        {/* Store promise */}
-        <div className="rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
-          <p className="font-semibold">Free delivery over ৳2,000</p>
-          <p className="mt-1 text-gray-400">7-day easy exchange</p>
-        </div>
+        {/* Store promise: hidden until offer text is configured by an admin. */}
+        {(offerTitle || offerSubtitle) && (
+          <div className="rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+            {offerTitle && <p className="font-semibold">{offerTitle}</p>}
+            {offerSubtitle && (
+              <p className="mt-1 text-gray-400">{offerSubtitle}</p>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

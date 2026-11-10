@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getOrdersForUser } from "@/lib/orders";
 import { paymentMethodLabel, paymentStatusLabel } from "@/lib/shopSettings";
-
-const money = (value: number) => `৳${Number(value).toFixed(2)}`;
+import { formatPrice } from "@/lib/currency";
 
 export default async function OrdersPage() {
   const session = await getSession();
@@ -21,14 +20,14 @@ export default async function OrdersPage() {
             <article key={order.id} className="rounded-xl border bg-white p-4 shadow-sm">
               <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <div><h2 className="font-semibold">Order #{order.id}</h2><p className="text-sm text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleString() : ""}</p></div>
-                <div className="text-right"><p className="text-lg font-bold">{money(order.total)}</p><p className="text-sm capitalize text-gray-600">{order.status || "pending"}</p></div>
+                <div className="text-right"><p className="text-lg font-bold">{formatPrice(order.total)}</p><p className="text-sm capitalize text-gray-600">{order.status || "pending"}</p></div>
               </div>
-              <ul className="divide-y text-sm">{order.items.map((item, index) => <li key={`${order.id}-${index}`} className="flex justify-between gap-3 py-2"><span>{item.name} × {item.quantity}</span><span>{money(item.price * item.quantity)}</span></li>)}</ul>
+              <ul className="divide-y text-sm">{order.items.map((item, index) => <li key={`${order.id}-${index}`} className="flex justify-between gap-3 py-2"><span>{item.name} × {item.quantity}</span><span>{formatPrice(item.price * item.quantity)}</span></li>)}</ul>
               <div className="mt-4 grid gap-2 border-t pt-4 text-sm sm:grid-cols-2">
                 <p><strong>Payment:</strong> {paymentMethodLabel(order.payment_method)}</p>
                 <p><strong>Payment verification:</strong> {paymentStatusLabel(order.payment_status)}</p>
                 <p><strong>Delivery area:</strong> {order.delivery_area === "outside_dhaka" ? "Outside Dhaka" : "Dhaka"}</p>
-                <p><strong>Delivery charge:</strong> {money(order.delivery_charge ?? 0)}</p>
+                <p><strong>Delivery charge:</strong> {formatPrice(order.delivery_charge ?? 0)}</p>
                 {order.tracking_number && <p><strong>Tracking number:</strong> {order.tracking_number}</p>}
                 {order.payment_reference && <p><strong>Transaction reference:</strong> {order.payment_reference}</p>}
                 {order.customer_phone && <p><strong>Phone:</strong> {order.customer_phone}</p>}

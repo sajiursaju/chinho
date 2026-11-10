@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -10,6 +9,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { formatPrice } from "@/lib/currency";
 
 interface SalesData {
   date: string;
@@ -20,19 +20,12 @@ interface SalesOverviewProps {
   data: SalesData[];
 }
 
-export default function SalesOverview({
-  data,
-}: SalesOverviewProps) {
+export default function SalesOverview({ data }: SalesOverviewProps) {
   return (
     <section className="h-full min-w-0 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Sales Overview
-        </h2>
-
-        <p className="text-sm text-gray-500">
-          Daily revenue · Last 30 days
-        </p>
+        <h2 className="text-lg font-semibold text-gray-900">Sales Overview</h2>
+        <p className="text-sm text-gray-500">Daily revenue · Last 30 days</p>
       </div>
 
       {data.length === 0 ? (
@@ -44,31 +37,12 @@ export default function SalesOverview({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
-              margin={{
-                top: 10,
-                right: 10,
-                left: 0,
-                bottom: 0,
-              }}
+              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
             >
               <defs>
-                <linearGradient
-                  id="salesGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="#2563eb"
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="#2563eb"
-                    stopOpacity={0}
-                  />
+                <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
@@ -86,17 +60,19 @@ export default function SalesOverview({
                 minTickGap={20}
               />
 
+              {/* ✅ FIX 1: Y-axis labels — was `$${value}`, now formatPrice() */}
               <YAxis
-                width={55}
+                width={80}
                 tick={{ fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(value: number) => `$${value}`}
+                tickFormatter={(value: number) => formatPrice(value)}
               />
 
+              {/* ✅ FIX 2: Tooltip — was `$${...toFixed(2)}`, now formatPrice() */}
               <Tooltip
                 formatter={(value) => [
-                  `$${Number(value).toFixed(2)}`,
+                  formatPrice(Number(value)),
                   "Revenue",
                 ]}
               />
