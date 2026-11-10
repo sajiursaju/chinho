@@ -1,0 +1,3 @@
+module.exports=[76673,a=>{"use strict";var b=a.i(87924),c=a.i(50944);a.s(["default",0,function(){let a=(0,c.useRouter)();async function d(){await fetch("/api/logout",{method:"POST"}).catch(()=>{}),a.push("/login"),a.refresh()}return(0,b.jsx)("button",{type:"button",onClick:d,className:"rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50",children:"Sign out"})}])}];
+
+//# sourceMappingURL=app_users_SignOutButton_tsx_1-ns7if2ycs6k._.js.map

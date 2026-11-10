@@ -41,16 +41,19 @@ export const MAIN_CATEGORIES: MainCategory[] = [
   },
 ];
 
-// Finds a main category by slug. Returns undefined if missing or unknown.
-export function getMainCategory(slug?: string): MainCategory | undefined {
+// Finds a main category by slug. Returns undefined if missing, empty (null) or unknown.
+// null is allowed because MySQL columns can be empty and arrive as null.
+export function getMainCategory(
+  slug?: string | null
+): MainCategory | undefined {
   if (!slug) return undefined;
   return MAIN_CATEGORIES.find((c) => c.slug === slug);
 }
 
-// Finds a subcategory inside a main category. Returns undefined if either slug is unknown.
+// Finds a subcategory inside a main category. Returns undefined if either slug is empty (null) or unknown.
 export function getSubCategory(
-  mainSlug?: string,
-  subSlug?: string
+  mainSlug?: string | null,
+  subSlug?: string | null
 ): SubCategory | undefined {
   if (!mainSlug || !subSlug) return undefined;
   return getMainCategory(mainSlug)?.children.find((s) => s.slug === subSlug);

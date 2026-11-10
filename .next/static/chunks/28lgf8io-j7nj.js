@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,70137,t=>{"use strict";t.s(["f",0,function(t,e="BDT",r="en-BD"){let n="string"==typeof t?parseFloat(t):t;return isNaN(n)?"৳0.00":new Intl.NumberFormat(r,{style:"currency",currency:e,maximumFractionDigits:2}).format(n)}])}]);
