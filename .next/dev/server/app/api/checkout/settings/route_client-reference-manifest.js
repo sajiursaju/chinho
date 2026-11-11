@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/checkout/settings/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"C:\\Users\\Computer Importer\\Desktop\\chinho\\app\\api\\checkout\\settings\\route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

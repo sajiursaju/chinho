@@ -2,6 +2,8 @@
   "/api/storefront/offers/route": "app/api/storefront/offers/route.js",
   "/api/me/route": "app/api/me/route.js",
   "/page": "app/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/admin/orders/page": "app/admin/orders/page.js"
+  "/admin/products/page": "app/admin/products/page.js",
+  "/admin/reviews/page": "app/admin/reviews/page.js",
+  "/admin/settings/page": "app/admin/settings/page.js",
+  "/admin/page": "app/admin/page.js"
 }

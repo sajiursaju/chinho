@@ -1,3 +1,4 @@
+// app/admin/products/ProductTable.tsx
 "use client";
 
 import Link from "next/link";
@@ -12,7 +13,31 @@ export type ProductRow = {
   name: string;
   categoryLabel: string;
   priceText: string;
+  imageUrl: string | null;
+  stock: number | null;
 };
+
+// Small picture, or a gray box when the product has no picture.
+function Thumb({ src, alt }: { src: string | null; alt: string }) {
+  if (!src) {
+    return <div className="h-10 w-10 shrink-0 rounded-md bg-gray-200" aria-hidden="true" />;
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      className="h-10 w-10 shrink-0 rounded-md border border-gray-200 object-cover"
+    />
+  );
+}
+
+// Stock number, in red when the product is sold out.
+function StockText({ stock }: { stock: number }) {
+  if (stock <= 0) return <span className="font-medium text-red-600">Out of stock</span>;
+  return <span>{stock}</span>;
+}
 
 export default function ProductTable({ products }: { products: ProductRow[] }) {
   const router = useRouter();
@@ -22,6 +47,9 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
   const [busy, setBusy] = useState(false);
 
   const allSelected = products.length > 0 && products.every((p) => selected.has(p.id));
+
+  // Show the Stock column only when the products table really has stock values.
+  const hasStock = products.some((p) => p.stock !== null);
 
   // Ticks or unticks one row.
   function toggleOne(id: number) {
@@ -80,13 +108,24 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
 
   return (
     <div>
-      {/* Bulk action bar */}
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          {selected.size > 0
-            ? `${selected.size} selected`
-            : "Select products to delete several at once"}
-        </p>
+      {/* ── Bulk action bar (same on desktop and mobile) ── */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {/* Select-all box: mobile only, because the desktop table has one in its header */}
+          <input
+            type="checkbox"
+            aria-label="Select all products on this page"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="h-4 w-4 cursor-pointer md:hidden"
+          />
+          <p className="text-sm text-gray-600">
+            {selected.size > 0
+              ? `${selected.size} selected`
+              : "Select products to delete several at once"}
+          </p>
+        </div>
+
         <button
           type="button"
           onClick={deleteSelected}
@@ -97,9 +136,10 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      {/* ── DESKTOP / TABLET: standard table (md and wider) ── */}
+      <div className="hidden overflow-x-auto rounded-lg border border-gray-200 bg-white md:block">
         <table className="w-full text-left text-sm">
-          <thead className="bg-gray-100 text-gray-700">
+          <thead className="bg-gray-100 text-xs font-semibold uppercase tracking-wide text-gray-600">
             <tr>
               <th className="w-10 px-4 py-3">
                 <input
@@ -113,7 +153,8 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3 text-right">Price</th>
+              {hasStock && <th className="px-4 py-3 text-right">Stock</th>}
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -133,10 +174,20 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
                     className="h-4 w-4 cursor-pointer"
                   />
                 </td>
-                <td className="px-4 py-3">{product.id}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{product.name}</td>
-                <td className="px-4 py-3">{product.categoryLabel}</td>
-                <td className="px-4 py-3 font-medium">{product.priceText}</td>
+                <td className="px-4 py-3 text-gray-500">{product.id}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Thumb src={product.imageUrl} alt={product.name} />
+                    <span className="font-medium text-gray-900">{product.name}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-gray-600">{product.categoryLabel}</td>
+                <td className="px-4 py-3 text-right font-medium">{product.priceText}</td>
+                {hasStock && (
+                  <td className="px-4 py-3 text-right text-gray-700">
+                    {product.stock === null ? "—" : <StockText stock={product.stock} />}
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-3">
                     <Link
@@ -153,6 +204,57 @@ export default function ProductTable({ products }: { products: ProductRow[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* ── MOBILE: one card per product (below md) ── */}
+      <ul className="space-y-3 md:hidden">
+        {products.map((product) => (
+          <li
+            key={product.id}
+            className={`rounded-lg border p-4 ${
+              selected.has(product.id)
+                ? "border-red-200 bg-red-50"
+                : "border-gray-200 bg-white"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                aria-label={`Select ${product.name}`}
+                checked={selected.has(product.id)}
+                onChange={() => toggleOne(product.id)}
+                className="mt-1 h-4 w-4 shrink-0 cursor-pointer"
+              />
+
+              <Thumb src={product.imageUrl} alt={product.name} />
+
+              <div className="min-w-0 flex-1">
+                <p className="break-words font-semibold text-gray-900">{product.name}</p>
+                <p className="mt-1 text-sm text-gray-500">{product.categoryLabel}</p>
+                <p className="mt-2 text-base font-bold text-gray-900">{product.priceText}</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  ID: {product.id}
+                  {hasStock && product.stock !== null && (
+                    <>
+                      {" · Stock: "}
+                      <StockText stock={product.stock} />
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex justify-end gap-4 border-t border-gray-100 pt-3 text-sm">
+              <Link
+                href={`/admin/products/${product.id}/edit`}
+                className="text-blue-600 hover:underline"
+              >
+                Edit
+              </Link>
+              <DeleteProductButton id={product.id} name={product.name} />
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

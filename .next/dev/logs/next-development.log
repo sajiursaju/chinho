@@ -1,5 +1,48 @@
-{"timestamp":"00:00:04.887","source":"Server","level":"WARN","message":"⚠ The \"middleware\" file convention is deprecated. Please use \"proxy\" instead.\n\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy"}
-{"timestamp":"00:00:08.040","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:11.316","source":"Server","level":"LOG","message":"○ Compiling /admin/page ..."}
-{"timestamp":"00:00:43.084","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
-{"timestamp":"00:00:45.727","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:09.706","source":"Server","level":"WARN","message":"⚠ The \"middleware\" file convention is deprecated. Please use \"proxy\" instead.\n\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy"}
+{"timestamp":"00:00:10.941","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:14.057","source":"Server","level":"LOG","message":"○ Compiling /page ..."}
+{"timestamp":"00:00:21.534","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:24.799","source":"Server","level":"LOG","message":"○ Compiling /api/me/route ..."}
+{"timestamp":"00:01:14.708","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:16.681","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:23.134","source":"Server","level":"LOG","message":"○ Compiling /admin/page ..."}
+{"timestamp":"00:09:04.904","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:09:08.205","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:09:16.683","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:09:27.300","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:11:18.046","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:15:55.704","source":"Server","level":"LOG","message":"○ Compiling /admin/products/page ..."}
+{"timestamp":"00:20:55.855","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:21:05.723","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:21:06.961","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:22:38.877","source":"Server","level":"LOG","message":"○ Compiling /api/me/route ..."}
+{"timestamp":"00:23:01.802","source":"Server","level":"LOG","message":"○ Compiling /admin/reviews/page ..."}
+{"timestamp":"00:23:14.374","source":"Server","level":"LOG","message":"○ Compiling /admin/settings/page ..."}
+{"timestamp":"00:23:29.732","source":"Server","level":"LOG","message":"○ Compiling /api/admin/settings/route ..."}
+{"timestamp":"00:24:39.273","source":"Server","level":"LOG","message":"○ Compiling /admin/page ..."}
+{"timestamp":"00:30:56.694","source":"Server","level":"WARN","message":"⚠ ./app/page.tsx\nAttempted import error: 'getHomeProducts' is not exported from '@/lib/products' (imported as 'getHomeProducts').\n\nImport trace for requested module:\n./app/page.tsx"}
+{"timestamp":"00:30:58.804","source":"Server","level":"ERROR","message":"⨯ TypeError: (0 , _lib_products__WEBPACK_IMPORTED_MODULE_6__.getHomeProducts) is not a function"}
+{"timestamp":"00:31:35.151","source":"Server","level":"WARN","message":"⚠ ./app/page.tsx\nAttempted import error: 'getHomeProducts' is not exported from '@/lib/products' (imported as 'getHomeProducts').\n\nImport trace for requested module:\n./app/page.tsx"}
+{"timestamp":"00:31:35.592","source":"Server","level":"ERROR","message":"⨯ TypeError: (0 , _lib_products__WEBPACK_IMPORTED_MODULE_6__.getHomeProducts) is not a function"}
+{"timestamp":"00:31:36.261","source":"Server","level":"WARN","message":"⚠ Fast Refresh had to perform a full reload due to a runtime error."}
+{"timestamp":"00:31:38.916","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:31:42.446","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:32:16.480","source":"Server","level":"WARN","message":"⚠ ./app/page.tsx\nAttempted import error: 'getHomeProducts' is not exported from '@/lib/products' (imported as 'getHomeProducts').\n\nImport trace for requested module:\n./app/page.tsx"}
+{"timestamp":"00:32:17.018","source":"Server","level":"ERROR","message":"⨯ TypeError: (0 , _lib_products__WEBPACK_IMPORTED_MODULE_6__.getHomeProducts) is not a function"}
+{"timestamp":"00:32:19.069","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:32:19.860","source":"Server","level":"WARN","message":"⚠ ./app/page.tsx\nAttempted import error: 'getHomeProducts' is not exported from '@/lib/products' (imported as 'getHomeProducts').\n\nImport trace for requested module:\n./app/page.tsx"}
+{"timestamp":"00:32:20.402","source":"Server","level":"ERROR","message":"⨯ TypeError: (0 , _lib_products__WEBPACK_IMPORTED_MODULE_6__.getHomeProducts) is not a function"}
+{"timestamp":"00:32:21.738","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:32:21.956","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:32:41.846","source":"Server","level":"WARN","message":"⚠ Fast Refresh had to perform a full reload due to a runtime error."}
+{"timestamp":"00:32:48.081","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:32:51.968","source":"Server","level":"LOG","message":"○ Compiling /api/me/route ..."}
+{"timestamp":"00:33:44.020","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:35:38.240","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:35:41.629","source":"Server","level":"LOG","message":"○ Compiling /api/me/route ..."}
+{"timestamp":"00:35:56.723","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:36:37.357","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:36:41.044","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:37:02.007","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:37:10.998","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:37:12.965","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
